@@ -6,5 +6,8 @@
     "url": "https://deliveryosapp.com/admin?bypass=plux2026test",
     "androidScheme": "https",
     "cleartext": false
+  },
+  "android": {
+    "appendUserAgent": "DeliveryOSAdmin/2"
   }
 }
