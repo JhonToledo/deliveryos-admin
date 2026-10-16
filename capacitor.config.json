@@ -1,0 +1,10 @@
+{
+  "appId": "com.deliveryosapp.admin",
+  "appName": "DeliveryOS Admin",
+  "webDir": "www",
+  "server": {
+    "url": "https://deliveryosapp.com/admin?bypass=plux2026test",
+    "androidScheme": "https",
+    "cleartext": false
+  }
+}
