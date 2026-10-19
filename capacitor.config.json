@@ -8,6 +8,6 @@
     "cleartext": false
   },
   "android": {
-    "appendUserAgent": "DeliveryOSAdmin/4"
+    "appendUserAgent": "DeliveryOSAdmin/5"
   }
 }
