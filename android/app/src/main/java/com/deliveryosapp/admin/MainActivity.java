@@ -4,11 +4,17 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.PowerManager;
+import android.provider.Settings;
 
 import com.getcapacitor.BridgeActivity;
 
@@ -23,6 +29,30 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         createOrdersChannel();
+        // Un par de segundos despues de abrir (ya con la pantalla cargada) pedimos al sistema
+        // que excluya la app del ahorro de bateria: sin esto, Samsung/Xiaomi/Huawei/Oppo
+        // "duermen" la app cerrada y las push de pedidos dejan de llegar (WhatsApp viene exento).
+        new Handler(Looper.getMainLooper()).postDelayed(this::requestBatteryExemption, 2500);
+    }
+
+    private void requestBatteryExemption() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        PowerManager pm = getSystemService(PowerManager.class);
+        if (pm == null || pm.isIgnoringBatteryOptimizations(getPackageName())) return;
+        // Si el usuario dijo "No", no insistir mas de una vez cada 12 h
+        SharedPreferences sp = getSharedPreferences("dos_admin", MODE_PRIVATE);
+        long last = sp.getLong("battery_prompt_at", 0L);
+        if (System.currentTimeMillis() - last < 12L * 60 * 60 * 1000) return;
+        sp.edit().putLong("battery_prompt_at", System.currentTimeMillis()).apply();
+        try {
+            Intent i = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:" + getPackageName()));
+            startActivity(i);
+        } catch (Exception e) {
+            try {
+                startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+            } catch (Exception ignored) { }
+        }
     }
 
     private void createOrdersChannel() {
